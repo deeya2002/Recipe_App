@@ -241,21 +241,21 @@ class _Homepage extends State<Homepage> {
                   SizedBox(
                     width: 30,
                   ),
-                  _category(
+                     _category(
                     image: "assets/home3.png",
-                    catename: "1",
+                    catename: "breakfast",
                   ),
                   _category(
                     image: "assets/home4.png",
-                    catename: "2",
+                    catename: "lunch",
                   ),
                   _category(
                     image: "assets/home3.png",
-                    catename: "3",
+                    catename: "dinner",
                   ),
                   _category(
                     image: "assets/home4.png",
-                    catename: "4",
+                    catename: "snacks",
                   ),
                 ],
               ),
@@ -271,19 +271,19 @@ class _Homepage extends State<Homepage> {
                   ),
                   _category(
                     image: "assets/home3.png",
-                    catename: "hora",
+                    catename: "pizza",
                   ),
                   _category(
                     image: "assets/home4.png",
-                    catename: "haina",
+                    catename: "burger",
                   ),
                   _category(
                     image: "assets/home3.png",
-                    catename: "hora",
+                    catename: "sandwich",
                   ),
                   _category(
                     image: "assets/home4.png",
-                    catename: "haina",
+                    catename: "snacks",
                   ),
                 ],
               ),

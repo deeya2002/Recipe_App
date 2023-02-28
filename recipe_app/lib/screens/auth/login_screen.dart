@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
-import 'package:recipe_app/database/cont.dart';
-import 'package:recipe_app/model/User.dart';
+import 'package:provider/provider.dart';
+
+import '../../Services/local_notification_service.dart';
+import '../../viewmodels/authe_viewmodel.dart';
+import '../../viewmodels/global_ui_viewmodel.dart';
+
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  const LoginScreen({Key? key}) : super(key: key);
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -16,14 +20,58 @@ class _LoginScreenState extends State<LoginScreen> {
   TextEditingController password = new TextEditingController();
   bool password_view = false;
   final form = GlobalKey<FormState>();
+  // void login() async {
+  //   Connection con = new Connection();
+  //   await con.dataCon();
+  //   bool um = await con.verifyPass(email.text, password.text);
+  //   debugPrint(um.toString());
+  //   if(um){
+  //    Navigator.of(context).pushNamed('/home');
+  //   }
+  // }
+  // void login() async{
+  //   _ui.loadState(true);
+  //   try{
+  //     _auth.login(email.text, password.text).then((value){
+  //       Navigator.of(context).pushReplacementNamed('/dashboard');
+  //     })
+  //         .catchError((e){
+  //       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message.toString())));
+  //     });
+  //   }catch(err){
+  //     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(err.toString())));
+  //   }
+  //   _ui.loadState(false);
+  // }
   void login() async {
-    Connection con = new Connection();
-    await con.dataCon();
-    bool um = await con.verifyPass(email.text, password.text);
-    debugPrint(um.toString());
-    if(um){
-     Navigator.of(context).pushNamed('/home');
+    if (form.currentState == null || !form.currentState!.validate()) {
+      return;
     }
+    _ui.loadState(true);
+    try {
+      await _auth.login(email.text, password.text).then((value) {
+
+        NotificationService.display(
+          title: "Welcome back",
+          body: "Hello ${_auth.loggedInUser?.name},\n Hope you are having a wonderful day.",
+        );
+        Navigator.of(context).pushReplacementNamed('/dashboard');
+      }).catchError((e) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message.toString())));
+      });
+    } catch (err) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(err.toString())));
+    }
+    _ui.loadState(false);
+  }
+
+  late GlobalUIViewModel _ui;
+  late AuthViewModel _auth;
+  @override
+  void initState() {
+    _ui = Provider.of<GlobalUIViewModel>(context, listen: false);
+    _auth = Provider.of<AuthViewModel>(context, listen: false);
+    super.initState();
   }
 
   @override
@@ -59,7 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: OutlinedButton.styleFrom(
                           backgroundColor: Color.fromRGBO(236, 180, 118, 1)),
                       onPressed: () {
-                        Navigator.of(context).pushReplacementNamed("/signUP");
+                        Navigator.of(context).pushReplacementNamed("/register");
                       },
                       child: Text(
                         "Sign Up",

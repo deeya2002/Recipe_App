@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
-import 'package:recipe_app/database/cont.dart';
-import 'package:recipe_app/model/User.dart';
+import 'package:provider/provider.dart';
+
+import '../../model/User_Model.dart';
+import '../../viewmodels/authe_viewmodel.dart';
+import '../../viewmodels/global_ui_viewmodel.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({Key? key}) : super(key: key);
@@ -18,43 +21,49 @@ class _RegisterScreenState extends State<RegisterScreen> {
   TextEditingController _nameController = TextEditingController();
   TextEditingController _phoneNumberController = TextEditingController();
   TextEditingController _usernameController = TextEditingController();
-  TextEditingController _gender = TextEditingController();
 
   bool _obscureTextPassword = true;
   bool _obscureTextPasswordConfirm = true;
 
-  // late GlobalUIViewModel _ui;
-  //late AuthViewModel _auth;
+  late GlobalUIViewModel _ui;
+  late AuthViewModel _auth;
+
   @override
   void initState() {
+    _ui = Provider.of<GlobalUIViewModel>(context, listen: false);
+    _auth = Provider.of<AuthViewModel>(context, listen: false);
     super.initState();
   }
 
+  void register() async{
+    _ui.loadState(true);
+    try{
+      await _auth.register(
+          UserModel(
+              email: _emailController.text,
+              password: _passwordController.text,
+              phone: _phoneNumberController.text,
+              username: _usernameController.text
+          )).then((value) => null)
+          .catchError((e){
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message.toString())));
+      });
+    }catch(err){
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(err.toString())));
+    }
+    _ui.loadState(false);
+  }
   @override
   Widget build(BuildContext context) {
-    void register() async {
-      Connection con = Connection();
-      await con.dataCon();
-      if (_passwordController.text == _confirmPasswordController.text) {
-        UserModel u = UserModel(
-            email: _emailController.text,
-            password: _passwordController.text,
-            fullname: _nameController.text,
-            number: _phoneNumberController.text,
-            uid: 0  ,
-            username: _usernameController.text);
-
-        //    await con.getData();
-        await con.insertUser(u);
-      } else {
-        showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return const AlertDialog(
-                  title: Text('Error'), content: Text('Password not matched'));
-            });
-      }
-    }
+    // void register() async {
+    //
+    //     showDialog(
+    //         context: context,
+    //         builder: (BuildContext context) {
+    //           return const AlertDialog(
+    //               title: Text('Error'), content: Text('Password not matched'));
+    //   }
+    // }
 
     return Container(
       decoration: const BoxDecoration(color: Colors.white),
@@ -307,7 +316,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               _formKey.currentState?.save();
                               // Perform sign-up logic
                               register();
-                              // print("welcome");
+                              // // print("welcome");
                             }
                           },
                           child: Text(
@@ -327,7 +336,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                         InkWell(
                             onTap: () {
-                              Navigator.of(context).pop();
+                              Navigator.of(context).pushNamed("/");
                             },
                             child: Text(
                               "Sign in",
