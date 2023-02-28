@@ -48,6 +48,10 @@ import 'package:flutter/material.dart';
 
 import '../Services/firebase_service.dart';
 import '../model/User_Model.dart';
+import '../model/favorite_model.dart';
+import '../model/recipe_model.dart';
+import '../repositories/favorite_repositories.dart';
+import '../repositories/recipe_repositories.dart';
 import '../repositories/user_repository.dart';
 
 class AuthViewModel with ChangeNotifier {
@@ -116,102 +120,100 @@ class AuthViewModel with ChangeNotifier {
     }
   }
 
+  FavoriteRepository _favoriteRepository = FavoriteRepository();
+  List<FavoriteModel> _favorites = [];
+  List<FavoriteModel> get favorites => _favorites;
+
+
+  List<RecipeModel>? _favoriterecipe;
+  List<RecipeModel>? get favoriterecipe => _favoriterecipe;
+
+  Future<void> getFavoritesUser() async{
+    try{
+      var response = await _favoriteRepository.getFavoritesUser(loggedInUser!.userId!);
+      _favorites=[];
+      for (var element in response) {
+        _favorites.add(element.data());
+      }
+      _favoriterecipe=[];
+      if(_favorites.isNotEmpty){
+
+        var recipeResponse = await RecipeRepository().getrecipeFromList(_favorites.map((e) => e.recipeId).toList());
+        for (var element in recipeResponse) {
+          _favoriterecipe!.add(element.data());
+        }
+      }
+
+      notifyListeners();
+    }catch(e){
+      print(e);
+      _favorites = [];
+      _favoriterecipe=null;
+      notifyListeners();
+    }
+  }
+
+  Future<void> favoriteAction(FavoriteModel? isFavorite, String recipeId) async{
+    try{
+      await _favoriteRepository.favorite(isFavorite, recipeId, loggedInUser!.userId! );
+      await getFavoritesUser();
+      notifyListeners();
+    }catch(e){
+      _favorites = [];
+      notifyListeners();
+    }
+  }
+
+
+  List<RecipeModel>? _myrecipe;
+  List<RecipeModel>? get myrecipe => _myrecipe;
+
+  Future<void> getMyrecipes() async{
+    try{
+      var recipeResponse = await RecipeRepository().getMyrecipes(loggedInUser!.userId!);
+      _myrecipe=[];
+      for (var element in recipeResponse) {
+        _myrecipe!.add(element.data());
+      }
+      notifyListeners();
+    }catch(e){
+      print(e);
+      _myrecipe=null;
+      notifyListeners();
+    }
+  }
+
+  Future<void> addMyrecipe(RecipeModel recipe)async {
+    try{
+      await RecipeRepository().addrecipes(recipe: recipe);
+
+      await getMyrecipes();
+      notifyListeners();
+    }catch(e){
+
+    }
+  }
+
+
+  Future<void> editMyrecipe(RecipeModel recipe, String recipeId)async {
+    try{
+      await RecipeRepository().editrecipe(recipe: recipe, recipeId: recipeId);
+      await getMyrecipes();
+      notifyListeners();
+    }catch(e){
+
+    }
+  }
+  Future<void> deleteMyrecipe(String recipeId) async{
+    try{
+      await RecipeRepository().removerecipe(recipeId, loggedInUser!.userId!);
+      await getMyrecipes();
+      notifyListeners();
+    }catch(e){
+      print(e);
+      _myrecipe=null;
+      notifyListeners();
+    }
+  }
+
 }
-//
-//   FavoriteRepository _favoriteRepository = FavoriteRepository();
-//   List<FavoriteModel> _favorites = [];
-//   List<FavoriteModel> get favorites => _favorites;
-//
-//
-//   List<ProductModel>? _favoriteProduct;
-//   List<ProductModel>? get favoriteProduct => _favoriteProduct;
-//
-//   Future<void> getFavoritesUser() async{
-//     try{
-//       var response = await _favoriteRepository.getFavoritesUser(loggedInUser!.userId!);
-//       _favorites=[];
-//       for (var element in response) {
-//         _favorites.add(element.data());
-//       }
-//       _favoriteProduct=[];
-//       if(_favorites.isNotEmpty){
-//
-//         var productResponse = await ProductRepository().getProductFromList(_favorites.map((e) => e.productId).toList());
-//         for (var element in productResponse) {
-//           _favoriteProduct!.add(element.data());
-//         }
-//       }
-//
-//       notifyListeners();
-//     }catch(e){
-//       print(e);
-//       _favorites = [];
-//       _favoriteProduct=null;
-//       notifyListeners();
-//     }
-//   }
-//
-//   Future<void> favoriteAction(FavoriteModel? isFavorite, String productId) async{
-//     try{
-//       await _favoriteRepository.favorite(isFavorite, productId, loggedInUser!.userId! );
-//       await getFavoritesUser();
-//       notifyListeners();
-//     }catch(e){
-//       _favorites = [];
-//       notifyListeners();
-//     }
-//   }
-//
-//
-//   List<ProductModel>? _myProduct;
-//   List<ProductModel>? get myProduct => _myProduct;
-//
-//   Future<void> getMyProducts() async{
-//     try{
-//       var productResponse = await ProductRepository().getMyProducts(loggedInUser!.userId!);
-//       _myProduct=[];
-//       for (var element in productResponse) {
-//         _myProduct!.add(element.data());
-//       }
-//       notifyListeners();
-//     }catch(e){
-//       print(e);
-//       _myProduct=null;
-//       notifyListeners();
-//     }
-//   }
-//
-//   Future<void> addMyProduct(ProductModel product)async {
-//     try{
-//       await ProductRepository().addProducts(product: product);
-//
-//       await getMyProducts();
-//       notifyListeners();
-//     }catch(e){
-//
-//     }
-//   }
-//
-//
-//   Future<void> editMyProduct(ProductModel product, String productId)async {
-//     try{
-//       await ProductRepository().editProduct(product: product, productId: productId);
-//       await getMyProducts();
-//       notifyListeners();
-//     }catch(e){
-//
-//     }
-//   }
-//   Future<void> deleteMyProduct(String productId) async{
-//     try{
-//       await ProductRepository().removeProduct(productId, loggedInUser!.userId!);
-//       await getMyProducts();
-//       notifyListeners();
-//     }catch(e){
-//       print(e);
-//       _myProduct=null;
-//       notifyListeners();
-//     }
-//   }
-//
-// }

@@ -4,12 +4,23 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:loader_overlay/loader_overlay.dart';
 import 'package:provider/provider.dart';
+import 'package:recipe_app/screens/auth/forget_password_screen.dart';
 import 'package:recipe_app/screens/auth/login_screen.dart';
 import 'package:recipe_app/screens/auth/signup.dart';
-import 'package:recipe_app/screens/auth/splash_screen.dart';
-import 'package:recipe_app/screens/homepage/home.dart';
+import 'package:recipe_app/screens/category/single_category_screen.dart';
+import 'package:recipe_app/screens/dashboard/dashboard.dart';
+import 'package:recipe_app/screens/recipe/add_recipe_screen.dart';
+import 'package:recipe_app/screens/recipe/edit_recipe_screen.dart';
+import 'package:recipe_app/screens/recipe/my_recipe_screen.dart';
+import 'package:recipe_app/screens/recipe/single_recipe_screen.dart';
+import 'package:recipe_app/screens/splash_screen.dart';
 import 'package:recipe_app/viewmodels/authe_viewmodel.dart';
+import 'package:recipe_app/viewmodels/category_viewmodel.dart';
 import 'package:recipe_app/viewmodels/global_ui_viewmodel.dart';
+import 'package:recipe_app/viewmodels/product_viewmodel.dart';
+import 'package:recipe_app/viewmodels/recipe_viewmodel.dart';
+
+import 'Services/local_notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,17 +32,23 @@ void main() async {
       projectId: "foodrecette-51075",
     ),
   );
+
+  NotificationService.initialize();
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
+
+  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider (create: (_) => GlobalUIViewModel()),
         ChangeNotifierProvider (create: (_) => AuthViewModel()),
+        ChangeNotifierProvider (create: (_) => CategoryViewModel()),
+        ChangeNotifierProvider (create: (_) => recipeViewModel()),
       ],
       child: GlobalLoaderOverlay(
         useDefaultLoading: false,
@@ -46,17 +63,22 @@ class MyApp extends StatelessWidget {
                 context.loaderOverlay.hide();
               }
               return MaterialApp(
-                debugShowCheckedModeBanner: false,
                 title: 'Flutter Demo',
                 theme: ThemeData(
                   primarySwatch: Colors.blue,
                 ),
-                initialRoute: "/login",
+                initialRoute: "/splash",
                 routes: {
                   "/login": (BuildContext context)=>LoginScreen(),
                   "/splash": (BuildContext context)=>SplashScreen(),
                   "/register": (BuildContext context)=>RegisterScreen(),
-                  "/dashboard": (BuildContext context)=>Homepage(),
+                  "/forget-password": (BuildContext context)=>ForgetPasswordScreen(),
+                  "/dashboard": (BuildContext context)=>DashboardScreen(),
+                  "/add-recipe": (BuildContext context)=>AddrecipeScreen(),
+                  "/edit-recipe": (BuildContext context)=>EditrecipeScreen(),
+                  "/single-recipe": (BuildContext context)=>SinglerecipeScreen(),
+                  "/single-category": (BuildContext context)=>SingleCategoryScreen(),
+                  "/my-recipes": (BuildContext context)=>MyrecipeScreen(),
                 },
               );
             }
@@ -69,6 +91,14 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key, required this.title}) : super(key: key);
 
+  // This widget is the home page of your application. It is stateful, meaning
+  // that it has a State object (defined below) that contains fields that affect
+  // how it looks.
+
+  // This class is the configuration for the state. It holds the values (in this
+  // case the title) provided by the parent (in this case the App widget) and
+  // used by the build method of the State. Fields in a Widget subclass are
+  // always marked "final".
 
   final String title;
 
@@ -81,19 +111,47 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _incrementCounter() {
     setState(() {
+      // This call to setState tells the Flutter framework that something has
+      // changed in this State, which causes it to rerun the build method below
+      // so that the display can reflect the updated values. If we changed
+      // _counter without calling setState(), then the build method would not be
+      // called again, and so nothing would appear to happen.
       _counter++;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-
+    // This method is rerun every time setState is called, for instance as done
+    // by the _incrementCounter method above.
+    //
+    // The Flutter framework has been optimized to make rerunning build methods
+    // fast, so that you can just rebuild anything that needs updating rather
+    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
+        // Here we take the value from the MyHomePage object that was created by
+        // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
       body: Center(
+        // Center is a layout widget. It takes a single child and positions it
+        // in the middle of the parent.
         child: Column(
+          // Column is also a layout widget. It takes a list of children and
+          // arranges them vertically. By default, it sizes itself to fit its
+          // children horizontally, and tries to be as tall as its parent.
+          //
+          // Invoke "debug painting" (press "p" in the console, choose the
+          // "Toggle Debug Paint" action from the Flutter Inspector in Android
+          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
+          // to see the wireframe for each widget.
+          //
+          // Column has various properties to control how it sizes itself and
+          // how it positions its children. Here we use mainAxisAlignment to
+          // center the children vertically; the main axis here is the vertical
+          // axis because Columns are vertical (the cross axis would be
+          // horizontal).
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             const Text(

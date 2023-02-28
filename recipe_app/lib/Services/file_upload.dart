@@ -13,7 +13,7 @@ class FileUpload{
       if(deletePath !=null){
         storage.child(deletePath).delete();
       }
-      var photo = await storage.child("products").child("$dt.jpg").putFile(File(selectedPath));
+      var photo = await storage.child("recipes").child("$dt.jpg").putFile(File(selectedPath));
       String photoUrl = await photo.ref.getDownloadURL();
       return ImagePath(
         imageUrl: photoUrl,
